@@ -28,6 +28,7 @@ export default function AdminClient(){
   const [nm,setNm]=useState(""); const [ds,setDs]=useState("");
   const [parent,setParent]=useState("");
   const [corners,setCorners]=useState<any[]>([]);
+  const [freshId,setFreshId]=useState(""); // newest event → its QR opens by itself
 
   async function load(){
     const me = await fetch("/api/auth/me").then(x=>x.json()).catch(()=>({ok:false}));
@@ -51,7 +52,7 @@ export default function AdminClient(){
     setMsg("");
     const res = await fetch("/api/buckets/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:nm,description:ds,parentFolderId:parent})}).then(x=>x.json());
     if(res.error) setMsg(res.error);
-    else { setMsg("Done! Your new event is ready — scroll down to see its QR and share it."); setNm(""); setDs(""); setParent(""); load(); }
+    else { setMsg("Done! Your new event is ready — its QR is open below, ready to share."); setFreshId(res.bucket?.id || ""); setNm(""); setDs(""); setParent(""); load(); }
   }
   async function delUpload(id:string){
     if(!confirm("Move this photo/video to Drive trash? You can restore it from trash within 30 days.")) return;
@@ -128,7 +129,7 @@ export default function AdminClient(){
 
           <h3 style={{margin:"18px 0 8px"}}><CalendarHeart size={17} style={{verticalAlign:-2}} /> Your events ({buckets.length})</h3>
           <div>
-            {buckets.map(b=>(<BucketRow key={b.id} b={b} onChange={load} />))}
+            {buckets.map(b=>(<BucketRow key={b.id} b={b} onChange={load} startOpen={b.id===freshId} />))}
             {!buckets.length && (
               <div className="card empty"><img src="/lotus-pink.svg" alt="" /><b>No events yet</b><p className="muted">Create your first event above. Its QR will appear here, ready to print or share.</p></div>
             )}
@@ -205,8 +206,9 @@ export default function AdminClient(){
   );
 }
 
-function BucketRow({ b, onChange }:{ b:any; onChange:()=>void }){
-  const [open,setOpen]=useState(false);
+function BucketRow({ b, onChange, startOpen }:{ b:any; onChange:()=>void; startOpen?:boolean }){
+  const [open,setOpen]=useState(!!startOpen);
+  useEffect(()=>{ if(startOpen) setOpen(true); },[startOpen]);
   return (
     <div className="bucket">
       <div className="row" style={{alignItems:"center"}}>
@@ -228,13 +230,20 @@ function BucketRow({ b, onChange }:{ b:any; onChange:()=>void }){
 
 function QRWithToken({ id, name }:{ id:string; name:string }){
   const [url,setUrl]=useState("");
-  useEffect(()=>{
-    fetch(`/api/buckets/${id}/link`).then(x=>x.json()).then(u=>{ if(u?.url) setUrl(u.url); }).catch(()=>{});
-  },[id]);
+  const [err,setErr]=useState("");
+  function fetchUrl(){
+    setErr("");
+    fetch(`/api/buckets/${id}/link`).then(x=>x.json()).then(u=>{
+      if(u?.url) setUrl(u.url);
+      else setErr(u?.error || "QR link did not load.");
+    }).catch(()=>setErr("Network trouble — press Retry."));
+  }
+  useEffect(()=>{ fetchUrl(); },[id]);
+  if(err) return <div className="notice">QR trouble: {err} <button className="btn btn-g btn-sm" style={{marginLeft:8}} onClick={fetchUrl}>Retry</button></div>;
   if(!url) return <p className="muted">Preparing the QR…</p>;
   return (
     <>
-      <div className="guide"><b>How to use it:</b> press PNG to download, print it and stick it at the entrance — or Copy link / Share to send it on WhatsApp. A small lotus sits in the middle automatically.</div>
+      <div className="guide"><b>How to use it:</b> <b>Poster image</b> makes one beautiful ready-to-share picture (seal + name + cute QR) for WhatsApp/print. Or use PNG, Copy link, Share. A small lotus sits in the middle automatically.</div>
       <QRCard url={url} eventName={name} />
     </>
   );
