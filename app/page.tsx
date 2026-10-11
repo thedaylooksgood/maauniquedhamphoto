@@ -1,11 +1,13 @@
 import FireButton from "@/components/FireButton";
+import Seal from "@/components/Seal";
 import { QrCode, Camera, CheckCircle2, ShieldCheck, Zap, FolderHeart } from "lucide-react";
 
 export default function Home() {
   return (
     <main className="wrap">
       <section className="hero">
-        <img className="hero-lotus" src="/lotus.svg" alt="" />
+        <img className="hero-lotus" src="/lotus-bloom.svg" alt="" />
+        <div className="reveal" style={{display:"grid",placeItems:"center",marginBottom:6}}><Seal size={150} /></div>
         <div className="nepali-display reveal" style={{fontSize:26,color:"var(--saffron-d)"}}>माँ के चरणों में</div>
         <span className="pill reveal"><span className="pulse-dot" /> No login &bull; No app &bull; Opens in seconds</span>
         <h1 className="reveal d1">Offer your <span className="shimmer">memories</span> at her feet</h1>
@@ -20,7 +22,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="lotus-divider reveal d3"><img src="/lotus.svg" alt="Lotus offered to Maa Durga" /></div>
+      <div className="lotus-divider reveal d3"><img src="/lotus-bloom.svg" alt="Lotus offered to Maa Durga" /></div>
 
       <section className="quote reveal d3">
         <p>&ldquo;Wherever the devotee remembers her with a pure heart, there <em>Maa Durga</em> arrives — protector of the faithful, destroyer of darkness, mother of all courage.&rdquo;</p>

@@ -2,16 +2,27 @@
 import { useEffect, useRef, useState } from "react";
 // @ts-ignore
 import QRCodeStyling from "qr-code-styling";
-import { Download, Share2, Printer, ImagePlus } from "lucide-react";
+import { Download, Share2, Printer, ImagePlus, Copy, Link2 } from "lucide-react";
 
+// Cute QR: a small pink lotus blooms in the middle by default.
+// The admin can swap in the temple seal (or any picture) below.
 export default function QRCard({ url, eventName }: { url: string; eventName: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<any>(null);
-  const [logo, setLogo] = useState("/temple-logo.svg");
+  const [logo, setLogo] = useState("/lotus-bloom.svg");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("mud_logo");
     if (saved) setLogo(saved);
+    else {
+      // Cache the temple seal locally so QR codes carry it even offline
+      fetch("/logo.png").then(r=>r.blob()).then(b=>{
+        const rd = new FileReader();
+        rd.onload = () => { try { localStorage.setItem("mud_logo", String(rd.result)); } catch {} };
+        rd.readAsDataURL(b);
+      }).catch(()=>{});
+    }
   }, []);
 
   useEffect(() => {
@@ -37,6 +48,11 @@ export default function QRCard({ url, eventName }: { url: string; eventName: str
     reader.readAsDataURL(f);
   }
 
+  async function copyLink() {
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(()=>setCopied(false), 2000); }
+    catch { alert("Copy this link: " + url); }
+  }
+
   async function share() {
     if ((navigator as any).share) {
       try { await (navigator as any).share({ title: eventName, text: `${eventName} — offer your photos`, url }); } catch {}
@@ -54,11 +70,16 @@ export default function QRCard({ url, eventName }: { url: string; eventName: str
       <div className="row" style={{justifyContent:"center",marginTop:10}}>
         <button className="btn btn-p" onClick={()=>qrRef.current?.download({name:eventName+"-QR", extension:"png"})}><Download size={16} /> PNG</button>
         <button className="btn btn-g" onClick={()=>qrRef.current?.download({name:eventName+"-QR", extension:"svg"})}><Download size={16} /> SVG</button>
+        <button className="btn btn-g" onClick={copyLink}>{copied ? "Copied!" : <><Link2 size={16} /> Copy link</>}</button>
         <button className="btn btn-g" onClick={share}><Share2 size={16} /> Share</button>
         <button className="btn btn-g" onClick={()=>window.print()}><Printer size={16} /> Print</button>
       </div>
+      <div className="row" style={{justifyContent:"center",marginTop:10}}>
+        <button className="btn btn-g btn-sm" onClick={()=>{ localStorage.setItem("mud_logo","/logo.png"); setLogo("/logo.png"); }}>Use temple seal instead</button>
+        <button className="btn btn-g btn-sm" onClick={()=>{ localStorage.setItem("mud_logo","/lotus-bloom.svg"); setLogo("/lotus-bloom.svg"); }}>Use lotus instead</button>
+      </div>
       <div style={{marginTop:10}}>
-        <label className="muted"><ImagePlus size={13} style={{verticalAlign:-2}} /> Temple logo in QR centre: <input type="file" accept="image/*" onChange={onLogo} /></label>
+        <label className="muted"><ImagePlus size={13} style={{verticalAlign:-2}} /> …or your own picture in the middle: <input type="file" accept="image/*" onChange={onLogo} /></label>
       </div>
     </div>
   );

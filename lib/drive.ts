@@ -1,17 +1,29 @@
 import { OAuth2Client } from "google-auth-library";
-import { decrypt } from "./crypto";
-import type { DriveAccount } from "./db";
 
-export function oauthForAccount(a: { clientId: string; clientSecret: string; refreshTokenEnc: string }) {
+// Single Drive account, from env vars (no database).
+// GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET + GOOGLE_REFRESH_TOKEN.
+export type DriveAccount = { clientId: string; clientSecret: string; refreshToken: string };
+
+export function envAccount(): DriveAccount {
+  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN || "";
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error("Drive not connected. Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REFRESH_TOKEN (README, one time).");
+  }
+  return { clientId, clientSecret, refreshToken };
+}
+
+export function oauthForAccount(a: DriveAccount) {
   const c = new OAuth2Client(a.clientId, a.clientSecret);
-  c.setCredentials({ refresh_token: decrypt(a.refreshTokenEnc) });
+  c.setCredentials({ refresh_token: a.refreshToken });
   return c;
 }
 
-export async function accessToken(a: { clientId: string; clientSecret: string; refreshTokenEnc: string }) {
+export async function accessToken(a: DriveAccount) {
   const c = oauthForAccount(a);
   const t = await c.getAccessToken();
-  if (!t.token) throw new Error("Google auth failed — reconnect Drive account.");
+  if (!t.token) throw new Error("Google auth failed — reconnect Drive (new refresh token).");
   return t.token;
 }
 
@@ -26,7 +38,7 @@ export async function createResumableSession(
   size: number
 ): Promise<string> {
   const token = await accessToken(account);
-  const safe = filename.replace(/[\\/:*?"<>|]/g, "_").slice(0, 150) || "photo";
+  const safe = filename.replace(/[\\/:*?"<>|]/g, "_").slice(0, 180) || "photo";
   const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable", {
     method: "POST",
     headers: {
@@ -50,32 +62,34 @@ export async function createResumableSession(
 export async function verifyFileInFolder(account: DriveAccount, fileId: string, expectedFolderId: string) {
   const token = await accessToken(account);
   const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,parents,thumbnailLink,webViewLink`,
+    `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,size,parents,webViewLink`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!res.ok) throw new Error("Could not verify upload with Google Drive.");
   const meta = await res.json();
   if (!meta.parents?.includes(expectedFolderId)) {
-    // Wrong folder → delete stray file, reject (prevents cross-bucket writes)
     await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     }).catch(() => {});
     throw new Error("Upload landed outside this event folder — rejected for safety.");
   }
-  return meta as { id: string; name: string; mimeType: string; size?: string; thumbnailLink?: string; webViewLink?: string };
+  return meta as { id: string; name: string; mimeType: string; size?: string; webViewLink?: string };
 }
 
-export async function driveFetch(account: DriveAccount, fileId: string, range?: string) {
+export async function driveFetch(account: DriveAccount, fileId: string) {
   const token = await accessToken(account);
   return fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-    headers: { Authorization: `Bearer ${token}`, ...(range ? { Range: range } : {}) },
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
 
-export async function deleteDriveFile(account: DriveAccount, fileId: string) {
+export async function trashDriveFile(account: DriveAccount, fileId: string) {
   const token = await accessToken(account);
+  // Trash (recoverable from Drive trash for 30 days), never permanent delete.
   await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-    method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ trashed: true }),
   });
 }
 
@@ -95,12 +109,43 @@ export async function findOrCreateFolder(account: DriveAccount, name: string, pa
   return created.id as string;
 }
 
-export async function listFolders(account: DriveAccount, parentId: string, pageSize = 50) {
+export async function listFolders(account: DriveAccount, parentId: string, pageSize = 100) {
   const token = await accessToken(account);
   const q = encodeURIComponent(`'${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
   const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=${q}&pageSize=${pageSize}&orderBy=name&fields=files(id,name)`,
+    `https://www.googleapis.com/drive/v3/files?q=${q}&pageSize=${pageSize}&orderBy=name&fields=files(id,name,description,createdTime)`,
     { headers: { Authorization: `Bearer ${token}` } }
   ).then((r) => r.json());
-  return (res.files ?? []) as { id: string; name: string }[];
+  return (res.files ?? []) as { id: string; name: string; description?: string; createdTime?: string }[];
+}
+
+export async function renameFolder(account: DriveAccount, folderId: string, name: string, description?: string) {
+  const token = await accessToken(account);
+  const body: any = { name };
+  if (typeof description === "string") body.description = description.slice(0, 500);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=id,name`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Could not rename folder in Drive.");
+}
+
+export async function listFiles(account: DriveAccount, folderId: string, pageSize = 200) {
+  const token = await accessToken(account);
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=${q}&pageSize=${pageSize}&orderBy=createdTime desc&fields=files(id,name,mimeType,size,createdTime,webViewLink)`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  ).then((r) => r.json());
+  if (res.error) throw new Error(res.error.message || "Drive list failed.");
+  return (res.files ?? []) as { id: string; name: string; mimeType: string; size?: string; createdTime?: string; webViewLink?: string }[];
+}
+
+export async function aboutEmail(account: DriveAccount): Promise<string> {
+  const token = await accessToken(account);
+  const about = await fetch("https://www.googleapis.com/drive/v3/about?fields=user", {
+    headers: { Authorization: `Bearer ${token}` },
+  }).then((r) => r.json()).catch(() => null);
+  return about?.user?.emailAddress || "";
 }

@@ -1,17 +1,22 @@
-import { readDB } from "@/lib/db";
+import { findBucket } from "@/lib/db";
 import { notFound } from "next/navigation";
 import UploadClient from "./UploadClient";
+import Seal from "@/components/Seal";
 
 export const dynamic = "force-dynamic";
 
 export default async function UploadPage({ params, searchParams }: { params: { slug: string }; searchParams: { k?: string } }) {
-  const db = await readDB();
-  const b = db.buckets.find((x) => x.slug === params.slug && x.isActive);
-  if (!b || b.qrToken !== searchParams.k) notFound();
+  let b = null;
+  try {
+    const found = await findBucket(params.slug);
+    if (found && found.isActive && found.token === searchParams.k) b = found;
+  } catch {}
+  if (!b) notFound();
   return (
     <main className="wrap" style={{maxWidth:640}}>
       <section className="hero">
-        <img className="hero-lotus" src="/lotus.svg" alt="" />
+        <img className="hero-lotus" src="/lotus-bloom.svg" alt="" />
+        <div className="reveal" style={{display:"grid",placeItems:"center",marginBottom:6}}><Seal size={120} /></div>
         <div className="nepali-display reveal" style={{fontSize:24,color:"var(--saffron-d)"}}>माँ को अर्पित</div>
         <span className="pill reveal"><span className="pulse-dot" /> {b.name}</span>
         <h1 className="reveal d1">Offer your <span className="shimmer">photos</span></h1>
@@ -21,7 +26,7 @@ export default async function UploadPage({ params, searchParams }: { params: { s
       <section className="quote reveal d3" style={{marginTop:14}}>
         <p>&ldquo;Whatever is offered with love — a flower, a photo, a prayer — <em>Maa</em> accepts it with grace.&rdquo;</p>
       </section>
-      <UploadClient slug={b.slug} token={b.qrToken} eventName={b.name} />
+      <UploadClient slug={b.slug} token={b.token} eventName={b.name} />
     </main>
   );
 }

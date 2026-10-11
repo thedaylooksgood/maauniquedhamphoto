@@ -1,58 +1,45 @@
 # 🛕 Maa Unique Dham — Photos Portal (Next.js, ₹0 hosting)
 
-Scan → Upload → HD save in **your own 5TB Google Drive**. No app, no login for guests, opens in ~2 sec on phone.
+Scan → Upload → HD save in **your own 5TB Google Drive**. No app, no login for guests, opens in seconds.
 
-## Kya milta hai
-- 📦 **Event buckets** — har event ka alag Drive folder + alag QR. QR **sirf usi event me** upload karta hai, kahin aur nahi.
-- 📷 **QR with mandir logo** — beech me logo, Download PNG/SVG, Share (WhatsApp), Print.
-- 🔒 **Private** — Drive files me **koi public link nahi**. Gallery sirf admin dekh sakta hai. Upload URL 1 file / 1 event tak limited.
-- 📱 **Device register** — naam + phone + device ID + time, kaun kya bheja.
-- 🔐 **Strong auth** — bcrypt-12 password hash, rate-limit login, **shared admin access** (many people can stay signed in together for now).
-- 💾 **Drive account per event** — har event ke liye alag Google account + folder chun sakte ho, kabhi bhi badal sakte ho.
+**No database anywhere.** Events are folders in your Drive, and every photo's filename itself carries the date, name, phone and device (`20261011-143022__Ramesh-Kumar__9876543210__a1b2c3d4__IMG.jpg`). Delete the site tomorrow — your Drive stays perfectly organised on its own.
 
-## Free hosting (Vercel, ₹0) — non-coder steps
-1. `npm install` → `npm run dev` (local check: http://localhost:3000)
-2. GitHub me repo push karo.
-3. https://vercel.com → New Project → repo import → Deploy (free). `SITE_URL` env me Vercel URL dalo (e.g. `https://mud-photos.vercel.app`).
-4. Env vars (Vercel → Settings → Environment Variables):
-   - `SITE_URL` = tumhara Vercel URL
-   - `JWT_SECRET` = 32+ random chars (koi bhi lamba random)
-   - `ADMIN_PASSWORD_HASH` = neeche wale step se
-5. Strong password set karo (12+ chars, e.g. `Mandir@2026#Strong`):
-   ```
-   npx tsx scripts/make-hash.ts "Tumhara-Strong-Password"
-   ```
-   Jo hash print ho, use `.env.local` + Vercel env me `ADMIN_PASSWORD_HASH` me paste karo. Redeploy.
+## What you get
+- 📦 **Event buckets** — each event is a dated folder + its own secret QR. A QR only feeds its own event, nowhere else.
+- 📷 **Cute QR** — small pink lotus in the middle by default; one tap to swap the temple seal in. PNG / SVG download, Copy link, Share, Print.
+- 🔒 **Private** — Drive files have no public links. The home page shows no admin entry at all. `/admin` is cookie-locked (middleware) + signature-checked on every API, and the dashboard renders nothing until sign-in passes.
+- 🖼️ **Gallery** — big magnified preview, full-quality download, phone-share, trash (recoverable 30 days), search, photo/video filter, who-sent-what table.
+- 📱 **Device fingerprinting** — every upload stamps name + phone + device + exact time into the filename.
+- 🔐 **Password-only auth** — one env var, rate-limited login, multi-device friendly.
 
-## Google Drive connect (one click, your 5TB is used)
-1. One-time site setup (5 min, free, done once ever): Google Cloud Console → new project → **switch on the Google Drive API** → Credentials → Create → OAuth client ID → **Web application** → under Authorised redirect URIs paste your site address + `/api/drive/callback` (local: `http://localhost:3000/api/drive/callback`). Keep the app in **Testing** mode and add the temple Gmail under Test users. Copy the Client ID + Secret into `.env.local` as `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and restart.
-2. Open `/admin` → Login → **Google Drive** tab → **Connect with Google** → choose the Gmail with your 5TB space → Allow.
-3. Under that account press **Choose storage folder** → tap into the folder you want (or Make folder) → **Use this folder**.
-4. **Events** tab → make an event → **Show QR** → PNG download / Share / Print. No tokens, no scripts, no IDs to copy — ever.
-
-## Why this is safe with Google's rules
-- **Least permission**: the portal asks for `drive.file` only — it can touch just the files and folders it creates itself (its own "Maa Unique Dham" folder). It cannot see or open anything else in your Drive. No full-Drive access, ever.
-- **Standard login**: same "Sign in with Google" OAuth every safe app uses, with PKCE + a one-time state check on every login.
-- **Private by design**: Google keys live only on the server, encrypted (AES-256). The browser only ever gets short-lived, single-file upload links.
-- **Own-temple use**: consent screen stays in Testing mode with the temple Gmail as test user — exactly what Google intends for personal/family tools. No verification review needed.
-
-## Daily use
-- Event wala: Events → Show QR → print ya WhatsApp share.
-- Guest: QR scan → naam likho → 📷/🖼️ → Upload. Apni photo koi aur nahi dekh sakta.
-- Admin: Gallery tab → filter (event/photo/video/search) → HD view → ⬇️ Download → 🗑️ delete. “Kaun kya bheja” table me device-wise.
-
-## Security notes (sach)
-- Password kabhi plain me save nahi hota (bcrypt-12). 8 galat try → 5 min block.
-- Many admins may stay signed in together (multi-login is on for now).
-- Drive refresh tokens AES-256-GCM se encrypted, browser ko kabhi nahi bheje jate. Upload ke liye short-lived one-file URL milta hai.
-- Drive files private rahte hain; site `/api/media` se sirf logged-in admin ko stream hote hain.
-- QR token leak ho to: Events → 🔄 New QR (purana turant band).
-
-## Commands
+## Run it (localhost)
 ```
 npm install
-npm run dev      # local
-npm run build    # production check
-npx tsx scripts/make-hash.ts "Strong-Password-12+"
+npm run dev        # wait for "Ready", open http://localhost:3000
 ```
+First page load takes ~10 seconds (it compiles). `.env.local` needs: `SITE_URL`, `JWT_SECRET` (32+ random chars), `ADMIN_PASSWORD_HASH` (below), Google keys (below).
 
+## Password
+Type it straight into settings — no scrambling step, no script:
+- Local: `ADMIN_PASSWORD=darjeeling123` in `.env.local`
+- Vercel: Settings → Environment Variables → `ADMIN_PASSWORD`
+- Avoid the `$` sign in it (settings files eat dollar signs). Changing later: dashboard → Settings → Change password → paste the new one + redeploy.
+
+## Google Drive — proper setup, once ever (free)
+1. Google Cloud Console → new project → switch on **Google Drive API** → Credentials → Create → **OAuth client ID → Web application** → Authorised redirect URI = your site + `/api/drive/callback` (local: `http://localhost:3000/api/drive/callback`). Keep it in **Testing** mode, add the temple Gmail as test user.
+2. Put Client ID + Secret in settings (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`), restart/redeploy.
+3. Dashboard → Login → **Google Drive** tab → **Connect with Google** → pick the 5TB Gmail → Allow → copy the **one key** shown → paste as `GOOGLE_REFRESH_TOKEN` → redeploy. Done forever.
+4. The portal makes its own **"Maa Unique Dham"** folder and only ever touches what it creates (`drive.file` least-permission — compliant, no review needed for own use).
+
+## How to add events properly (daily use)
+1. **Events tab** → name it clearly with date (`Navratri Day 3 — 2026`) → optional corner folder → **Create**.
+2. **Show QR & share options** → PNG download for print, or Copy link / Share for WhatsApp. The QR holds the event's secret — anyone with it can upload, but only into that event.
+3. **Pause** an event when the function ends (QR stops working, photos stay). **Replace QR** if a QR leaks. **Trash** only when truly done (Drive trash keeps it 30 days).
+4. **Gallery**: pick the event → tap a photo → preview big → Full quality (download), Share (phone-to-phone), or trash.
+5. Filenames in Drive already tell the story: `date-time__name__phone__device__original` — sort, search and backup straight from Drive itself.
+
+## Vercel (free) checklist
+Push to GitHub → Import → add env vars → Deploy:
+- `SITE_URL`, `JWT_SECRET`, `ADMIN_PASSWORD`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`
+No database, no storage add-on, nothing else. Redeploy after every env change.

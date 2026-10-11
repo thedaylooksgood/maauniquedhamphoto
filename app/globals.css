@@ -246,7 +246,28 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff}
 .bucket:hover,.qrbox:hover{transform:translateY(-2px);box-shadow:0 18px 38px -14px var(--glow)}
 .hero{animation:heroIn .7s var(--ease) both}
 @keyframes heroIn{from{opacity:0;transform:translateY(22px) scale(.99)}to{opacity:1;transform:none}}
-.bucket{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin-bottom:12px}
+
+/* ================= temple seal + lotus ================= */
+.seal-wrap{position:relative;display:inline-grid;place-items:center;flex-shrink:0}
+.seal-img{border-radius:50%;background:#fff;object-fit:cover;
+  border:3px solid #fff;outline:2px solid rgba(193,18,31,.35);outline-offset:3px;
+  box-shadow:0 18px 44px -12px rgba(193,18,31,.45),0 8px 20px -8px var(--glow)}
+.seal-ring{position:absolute;inset:-12px;border-radius:50%;pointer-events:none;
+  border:2px dashed rgba(194,65,12,.45);animation:spinSlow 26s linear infinite}
+.seal-ring::after{content:"";position:absolute;top:-4px;left:50%;width:8px;height:8px;margin-left:-4px;
+  border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.logo-badge{width:46px;height:46px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#fff;
+  border:2px solid #fff;outline:2px solid rgba(193,18,31,.4);outline-offset:2px;
+  box-shadow:0 8px 18px -6px rgba(193,18,31,.5)}
+.logo-badge img{width:100%;height:100%;object-fit:cover}
+.lotus-divider img{width:150px}
+.hero-lotus{width:340px;opacity:.14}
+.brand b.nepali-display{font-size:19px;color:var(--maroon)}
+@media (prefers-reduced-motion:reduce){.seal-ring{animation:none}.floaty{animation:none}}
+.bucket{border:1px solid var(--line);border-radius:18px;padding:16px;background:#fff;margin-bottom:12px;position:relative;overflow:hidden}
+.bucket::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--saffron),#c1121f,var(--gold),var(--saffron))}
 .bucket h3{margin:0;font-size:17px}.bucket code{font-size:12px;background:#fff7ed;padding:3px 8px;border-radius:8px;word-break:break-all}
 .kbd{font-size:12px;background:#000;color:#fff;border-radius:6px;padding:2px 7px}
 @media print{.top,.tools,.tabs,.no-print{display:none!important}.wrap{padding:0}}

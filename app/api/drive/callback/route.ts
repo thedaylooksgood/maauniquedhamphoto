@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { readDB, writeDB, newId } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
-import { exchangeCode, googleConfig, APP_ROOT_NAME } from "@/lib/google";
-import { findOrCreateFolder } from "@/lib/drive";
-import { encrypt } from "@/lib/crypto";
+import { exchangeCode } from "@/lib/google";
 
-// Step 2: Google sends the admin back here → we save their Drive connection.
+// After Google sign-in, we do NOT save anything anywhere (no database).
+// The reusable key is handed to the admin once, to paste into hosting settings.
 export async function GET(req: Request) {
   const a = await requireAdmin();
   if (!a.ok) return NextResponse.redirect(new URL("/admin/login", req.url));
@@ -30,38 +28,11 @@ export async function GET(req: Request) {
     if (!refreshToken) {
       return fail("Google did not give a reusable key. Open myaccount.google.com → Security → remove this app's access, then Connect again.");
     }
-    const { clientId, clientSecret } = googleConfig();
-    const db = await readDB();
-    const label = email ? `Google Drive (${email})` : `Google Drive ${new Date().toLocaleDateString()}`;
-    let acc = email ? db.driveAccounts.find((x) => x.label === label) : undefined;
-    if (acc) {
-      acc.clientId = clientId;
-      acc.clientSecret = clientSecret;
-      acc.refreshTokenEnc = encrypt(refreshToken);
-    } else {
-      acc = {
-        id: newId("drv"),
-        label,
-        clientId,
-        clientSecret,
-        refreshTokenEnc: encrypt(refreshToken),
-        rootFolderId: "root",
-        createdAt: new Date().toISOString(),
-      };
-      db.driveAccounts.unshift(acc);
-    }
-    // The portal keeps its own folder ("Maa Unique Dham") so it only ever
-    // touches what it created — this is what keeps it inside Google's rules.
-    try {
-      const appFolder = await findOrCreateFolder(acc, APP_ROOT_NAME, "root");
-      if (!acc.rootFolderId || acc.rootFolderId === "root") acc.rootFolderId = appFolder;
-    } catch {}
-    await writeDB(db);
-    const res = NextResponse.redirect(
-      new URL(`/admin/drive-result?ok=1&msg=${encodeURIComponent(email || "Google Drive")}`, req.url)
-    );
+    const res = NextResponse.redirect(new URL(`/admin/drive-result?ok=1&fresh=1&msg=${encodeURIComponent(email || "Google Drive")}`, req.url));
     res.cookies.delete("mud_oauth");
     res.cookies.delete("mud_pkce");
+    // Held 5 minutes in a cookie only you can read, then gone. Copy it to hosting settings.
+    res.cookies.set("mud_token", `${refreshToken}::${email}`, { httpOnly: true, path: "/", maxAge: 300, sameSite: "lax" });
     return res;
   } catch (e: any) {
     return fail(e.message || "Google connection failed. Please try again.");

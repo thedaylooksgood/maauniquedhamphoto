@@ -52,7 +52,7 @@ export default function UploadClient({ slug, token, eventName }: { slug: string;
       try {
         const s = await fetch("/api/upload/session", {
           method:"POST", headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({ slug, token, filename: item.file.name, mime: item.file.type, size: item.file.size })
+          body: JSON.stringify({ slug, token, filename: item.file.name, mime: item.file.type, size: item.file.size, uploaderName: name.trim(), uploaderPhone: phone.trim(), deviceId: deviceId() })
         }).then(r=>r.json());
         if (s.error) throw new Error(s.error);
         const respText = await putWithProgress(s.sessionUrl, item.file, (p)=>
@@ -61,7 +61,7 @@ export default function UploadClient({ slug, token, eventName }: { slug: string;
         try { fileId = JSON.parse(respText).id; } catch { throw new Error("Google confirmation missing"); }
         const c = await fetch("/api/upload/complete", {
           method:"POST", headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({ slug, token, fileId, filename: item.file.name, mime: item.file.type, size: item.file.size, uploaderName: name.trim(), uploaderPhone: phone.trim(), deviceId: deviceId() })
+          body: JSON.stringify({ slug, token, fileId })
         }).then(r=>r.json());
         if (c.error) throw new Error(c.error);
         ok++;
