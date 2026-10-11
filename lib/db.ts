@@ -174,7 +174,7 @@ export function buildFileName(o: { name: string; phone: string; deviceId: string
     stampNow(),
     cleanPart(o.name, 40) || "Guest",
     cleanPart(o.phone.replace(/\D/g, ""), 15) || "nophone",
-    cleanPart(o.deviceId, 12) || "nodevice",
+    cleanPart(o.deviceId, 24) || "nodevice",
     orig || "photo",
   ].join(SEP);
 }

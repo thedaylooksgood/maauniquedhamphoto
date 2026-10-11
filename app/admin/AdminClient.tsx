@@ -95,7 +95,7 @@ export default function AdminClient(){
       )}
       {ready && (<>
       <section className="quote reveal" style={{marginBottom:12}}>
-        <img src="/lotus-bloom.svg" alt="Lotus" style={{width:130}} />
+        <img src="/final-lotus.png" alt="Lotus" style={{width:130}} />
         <p>Welcome, sevak. From here you create <em>events</em>, share their <em>QR codes</em>, and receive every photo as an <em>offering</em> — safe and organised.</p>
       </section>
 
@@ -131,7 +131,7 @@ export default function AdminClient(){
           <div>
             {buckets.map(b=>(<BucketRow key={b.id} b={b} onChange={load} startOpen={b.id===freshId} />))}
             {!buckets.length && (
-              <div className="card empty"><img src="/lotus-pink.svg" alt="" /><b>No events yet</b><p className="muted">Create your first event above. Its QR will appear here, ready to print or share.</p></div>
+              <div className="card empty"><img src="/final-lotus.png" alt="" /><b>No events yet</b><p className="muted">Create your first event above. Its QR will appear here, ready to print or share.</p></div>
             )}
           </div>
         </>
@@ -170,7 +170,7 @@ export default function AdminClient(){
               ))}
             </div>
           ) : (
-            <div className="card empty"><img src="/lotus-pink.svg" alt="" /><b>Nothing here yet</b><p className="muted">Share this event&apos;s QR from the &ldquo;Events & QR codes&rdquo; tab. As soon as someone uploads, their photos appear here.</p></div>
+            <div className="card empty"><img src="/final-lotus.png" alt="" /><b>Nothing here yet</b><p className="muted">Share this event&apos;s QR from the &ldquo;Events & QR codes&rdquo; tab. As soon as someone uploads, their photos appear here.</p></div>
           )}
 
           <h3 style={{marginTop:22}}><Users size={17} style={{verticalAlign:-2}} /> Who sent what ({devices.length} people)</h3>

@@ -9,7 +9,7 @@ import { Download, Share2, Printer, ImagePlus, Copy, Link2, Image as ImageIcon }
 export default function QRCard({ url, eventName }: { url: string; eventName: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const qrRef = useRef<any>(null);
-  const [logo, setLogo] = useState("/lotus-bloom.svg");
+  const [logo, setLogo] = useState("/final-lotus.png");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -22,11 +22,17 @@ export default function QRCard({ url, eventName }: { url: string; eventName: str
     ref.current.innerHTML = "";
     const qr = new QRCodeStyling({
       width: 260, height: 260, data: url, margin: 8,
-      image: logo, imageOptions: { crossOrigin: "anonymous", margin: 6, imageSize: 0.42 },
-      dotsOptions: { color: "#7c2d12", type: "rounded" },
+      image: logo, imageOptions: { crossOrigin: "anonymous", margin: 8, imageSize: 0.4 },
+      dotsOptions: {
+        type: "rounded",
+        gradient: {
+          type: "linear", rotation: Math.PI / 4,
+          colorStops: [{ offset: 0, color: "#7c2d12" }, { offset: 1, color: "#c9950a" }],
+        },
+      },
       cornersSquareOptions: { color: "#c2410c", type: "extra-rounded" },
-      cornersDotOptions: { color: "#c2410c" },
-      backgroundOptions: { color: "#ffffff" },
+      cornersDotOptions: { color: "#c1121f" },
+      backgroundOptions: { round: 0.2, color: "#ffffff" },
     });
     qr.append(ref.current);
     qrRef.current = qr;
@@ -57,7 +63,7 @@ export default function QRCard({ url, eventName }: { url: string; eventName: str
     if (!qrBlob) throw new Error("QR not ready yet");
     const [seal, lotus, qr] = await Promise.all([
       loadImg("/logo.png"),
-      loadImg("/lotus-bloom.svg"),
+      loadImg("/final-lotus.png"),
       loadImg(URL.createObjectURL(qrBlob)),
     ]);
     const W = 1080, H = 1520;
@@ -175,7 +181,7 @@ export default function QRCard({ url, eventName }: { url: string; eventName: str
       </div>
       <div className="row" style={{justifyContent:"center",marginTop:10}}>
         <button className="btn btn-g btn-sm" onClick={()=>{ localStorage.setItem("mud_logo","/logo.png"); setLogo("/logo.png"); }}>Use temple seal instead</button>
-        <button className="btn btn-g btn-sm" onClick={()=>{ localStorage.setItem("mud_logo","/lotus-bloom.svg"); setLogo("/lotus-bloom.svg"); }}>Use lotus instead</button>
+        <button className="btn btn-g btn-sm" onClick={()=>{ localStorage.setItem("mud_logo","/final-lotus.png"); setLogo("/final-lotus.png"); }}>Use lotus instead</button>
       </div>
       <div style={{marginTop:10}}>
         <label className="muted"><ImagePlus size={13} style={{verticalAlign:-2}} /> …or your own picture in the middle: <input type="file" accept="image/*" onChange={onLogo} /></label>
