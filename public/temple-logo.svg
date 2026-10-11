@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="26" fill="#FFF7ED"/>
+  <g fill="none" stroke="#7c2d12" stroke-width="3" stroke-linecap="round">
+    <path d="M60 18 L60 30 M40 30 L80 30 M34 42 L86 42 M28 56 L92 56"/>
+    <path d="M42 56 L42 88 M60 56 L60 96 M78 56 L78 88"/>
+    <path d="M30 88 L90 88 M24 100 L96 100"/>
+    <circle cx="60" cy="70" r="7" fill="#f97316" stroke="#c2410c"/>
+  </g>
+  <text x="60" y="116" text-anchor="middle" font-size="9" fill="#7c2d12" font-family="sans-serif">माँ Unique धाम</text>
+</svg>
