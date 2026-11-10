@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest an improvement for real event use
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project optimises for free hosting, no database, no guest login,
+        and privacy. Please explain the real-world situation first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Who is affected, and what do they do today instead?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Who would use this?
+      options:
+        - Temple / religious organisation
+        - Community or cultural event
+        - Wedding or family function
+        - School / nonprofit
+        - Developer / self-hoster
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: This can work without a database.
+          required: true
+        - label: This can work on free hosting and the organiser's own Drive.
+          required: true
+        - label: This does not require guests to create an account or install an app.
+          required: true

@@ -2,6 +2,29 @@
   "name": "maa-unique-dham-photos",
   "version": "1.0.0",
   "private": true,
+  "description": "Free, private event photo collection portal. Guests scan a QR; full-quality photos land in the organiser's own Google Drive. No database, no guest accounts, no storage fees.",
+  "license": "MIT",
+  "author": "thedaylooksgood",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thedaylooksgood/maauniquedhamphoto.git"
+  },
+  "homepage": "https://maauniquedhamphoto.vercel.app",
+  "bugs": {
+    "url": "https://github.com/thedaylooksgood/maauniquedhamphoto/issues"
+  },
+  "keywords": [
+    "nextjs",
+    "typescript",
+    "google-drive",
+    "photo-gallery",
+    "event-photos",
+    "qr-code",
+    "self-hosted",
+    "privacy",
+    "no-database",
+    "temple"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

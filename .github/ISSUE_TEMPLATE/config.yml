@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/thedaylooksgood/maauniquedhamphoto/security/advisories/new
+    about: Please report security issues privately, not as public issues.
+  - name: Setup help
+    url: https://github.com/thedaylooksgood/maauniquedhamphoto/blob/main/SETUP-GUIDE.md
+    about: Step-by-step guide for hosting, Google Cloud and Drive setup.
+  - name: Questions and ideas
+    url: https://github.com/thedaylooksgood/maauniquedhamphoto/discussions
+    about: Ask questions or share how you use the portal.

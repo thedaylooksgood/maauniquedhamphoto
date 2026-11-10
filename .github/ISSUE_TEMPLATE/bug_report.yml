@@ -1,0 +1,67 @@
+name: Bug report
+description: Something broken in the portal
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please remove passwords, tokens and personal
+        photos from anything you paste here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Guest upload page
+        - Admin login
+        - Events / QR codes
+        - Gallery / downloads
+        - Google Drive connection
+        - Deployment / setup
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: Android 13, Chrome 126 / iPhone 15, Safari
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Remove secrets first. Vercel function logs help a lot.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I removed passwords, tokens and personal data from this report.
+          required: true
+        - label: I searched existing issues before opening this one.
+          required: true

@@ -1,8 +1,43 @@
 # 🛕 Maa Unique Dham — Photos Portal (Next.js, ₹0 hosting)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Next.js 14](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
+[![No database](https://img.shields.io/badge/database-none-2ea44f)](docs/ARCHITECTURE.md#why-drive-is-the-database)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 Scan → Upload → HD save in **your own 5TB Google Drive**. No app, no login for guests, opens in seconds.
 
 **No database anywhere.** Events are folders in your Drive, and every photo's filename itself carries the date, name, phone and device (`20261011-143022__Ramesh-Kumar__9876543210__a1b2c3d4__IMG.jpg`). Delete the site tomorrow — your Drive stays perfectly organised on its own.
+
+> **Open source, built for community use.** Maa Unique Dham is the reference
+> deployment; any temple, gurudwara, church, school, wedding or community group
+> can fork this, rebrand it, and run it on its own Drive. MIT licensed.
+
+## Who it's for
+
+- Temples, gurudwaras, churches and other places of worship
+- Festivals, satsangs, weddings and family functions
+- Schools, nonprofits and community organisations
+- Anyone who wants event photos **without** a paid gallery service, guest
+  accounts, or an app install
+
+## Why open source
+
+Commercial event-photo products charge per event, push guests into an app, and
+keep the originals on their servers. This portal flips that:
+
+- **Your storage, your photos** — everything lands in the organiser's own
+  Google Drive, in dated event folders that still make sense without the site.
+- **Zero infrastructure cost** — no database, no storage add-on, no paid tier.
+  Next.js on free hosting is enough.
+- **Guest-first** — one QR, no account, no app; works on low-end phones and
+  slow connections.
+- **Private by design** — least-privilege `drive.file` scope, no public links,
+  authenticated downloads.
+- **Reusable engineering** — Drive-as-database, chunked resumable uploads,
+  scoped capability URLs and encrypted secrets are documented in
+  [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for other low-cost,
+  privacy-first projects.
 
 ## What you get
 - 📦 **Event buckets** — each event is a dated folder + its own secret QR. A QR only feeds its own event, nowhere else.
@@ -17,7 +52,7 @@ Scan → Upload → HD save in **your own 5TB Google Drive**. No app, no login f
 npm install
 npm run dev        # wait for "Ready", open http://localhost:3000
 ```
-First page load takes ~10 seconds (it compiles). `.env.local` needs: `SITE_URL`, `JWT_SECRET` (32+ random chars), `ADMIN_PASSWORD_HASH` (below), Google keys (below).
+First page load takes ~10 seconds (it compiles). `.env.local` needs: `SITE_URL`, `JWT_SECRET` (32+ random chars), `ADMIN_PASSWORD` (below), Google keys (below).
 
 ## Password
 Type it straight into settings — no scrambling step, no script:
@@ -43,3 +78,18 @@ Push to GitHub → Import → add env vars → Deploy:
 - `SITE_URL`, `JWT_SECRET`, `ADMIN_PASSWORD`
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`
 No database, no storage add-on, nothing else. Redeploy after every env change.
+
+## Contributing
+
+Issues, ideas and pull requests are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md); for anything security-related, follow
+[SECURITY.md](SECURITY.md) instead of opening a public issue.
+Architecture notes live in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## License
+
+[MIT](LICENSE) © 2026 thedaylooksgood.
+
+Not affiliated with Google. Google Drive and Google Cloud are trademarks of
+Google LLC.
+
